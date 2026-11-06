@@ -1,0 +1,57 @@
+﻿# Python environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Datasets
+data/raw/
+data/processed/
+data/features/
+
+# Databases and experiment tracking
+*.db
+*.sqlite
+*.sqlite3
+mlruns/
+mlflow.db
+
+# Generated model artifacts
+models/**/*.joblib
+models/**/*.pt
+models/**/*.pth
+models/**/*.pkl
+models/**/*.onnx
+
+# Generated reports
+reports/*.html
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Frontend dependencies
+node_modules/
+dist/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

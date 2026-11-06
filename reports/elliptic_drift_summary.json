@@ -1,0 +1,19 @@
+{
+    "monitor": "FraudGuard AI - Elliptic Data Drift",
+    "generated_at_utc": "2026-11-06T11:06:20.428000+00:00",
+    "reference_dataset": "data\\processed\\elliptic\\train.parquet",
+    "current_dataset": "data\\processed\\elliptic\\validation.parquet",
+    "reference_rows": 26905,
+    "current_rows": 7292,
+    "features_analyzed": 165,
+    "excluded_columns": [
+        "txId",
+        "node_id",
+        "time_step",
+        "class",
+        "label"
+    ],
+    "report_html": "reports\\elliptic_drift_report.html",
+    "report_json": "reports\\elliptic_drift_report.json",
+    "interpretation": "This report compares feature distributions. Detected drift is a monitoring signal, not proof of model performance degradation or a reason to retrain automatically."
+}

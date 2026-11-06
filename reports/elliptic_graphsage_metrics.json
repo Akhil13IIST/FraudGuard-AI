@@ -1,0 +1,21 @@
+{
+    "model": "Elliptic GraphSAGE",
+    "best_epoch": 89,
+    "validation_average_precision": 0.8744904499153334,
+    "threshold": 0.9584233164787292,
+    "average_precision": 0.49666144759686215,
+    "roc_auc": 0.8262978193593957,
+    "precision": 0.5886792452830188,
+    "recall": 0.4351464435146444,
+    "f1": 0.5004009623095429,
+    "confusion_matrix": [
+        [
+            11432,
+            218
+        ],
+        [
+            405,
+            312
+        ]
+    ]
+}

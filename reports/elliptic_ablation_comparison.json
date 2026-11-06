@@ -1,0 +1,65 @@
+[
+    {
+        "experiment": "baseline",
+        "feature_count": 165,
+        "threshold": 0.7599999999999997,
+        "validation_f1": 0.9609784507862551,
+        "average_precision": 0.701972371015224,
+        "roc_auc": 0.8920381178132539,
+        "precision": 0.8723404255319149,
+        "recall": 0.6290097629009763,
+        "f1": 0.7309562398703403,
+        "confusion_matrix": [
+            [
+                11584,
+                66
+            ],
+            [
+                266,
+                451
+            ]
+        ]
+    },
+    {
+        "experiment": "drift_ablation",
+        "feature_count": 159,
+        "threshold": 0.7799999999999997,
+        "validation_f1": 0.958600583090379,
+        "average_precision": 0.7041326564217064,
+        "roc_auc": 0.8976309252309038,
+        "precision": 0.8856015779092702,
+        "recall": 0.6262203626220363,
+        "f1": 0.7336601307189542,
+        "confusion_matrix": [
+            [
+                11592,
+                58
+            ],
+            [
+                268,
+                449
+            ]
+        ]
+    },
+    {
+        "experiment": "regularized",
+        "feature_count": 165,
+        "threshold": 0.6899999999999997,
+        "validation_f1": 0.9299655568312285,
+        "average_precision": 0.695502869577663,
+        "roc_auc": 0.8947719695201155,
+        "precision": 0.7187993680884676,
+        "recall": 0.6345885634588564,
+        "f1": 0.674074074074074,
+        "confusion_matrix": [
+            [
+                11472,
+                178
+            ],
+            [
+                262,
+                455
+            ]
+        ]
+    }
+]

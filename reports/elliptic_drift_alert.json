@@ -1,0 +1,14 @@
+{
+    "monitor": "FraudGuard AI",
+    "status": "CRITICAL",
+    "drifted_features": 136,
+    "total_features": 165,
+    "drift_share": 0.824242,
+    "drift_percentage": 82.42,
+    "thresholds": {
+        "warning": 0.3,
+        "critical": 0.5
+    },
+    "recommended_action": "Recommend model evaluation and retraining review.",
+    "automatic_retraining_executed": false
+}
