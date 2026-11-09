@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+pandas==3.0.6
+numpy
+pyarrow>=25.0.1
+scikit-learn
+xgboost
+joblib
