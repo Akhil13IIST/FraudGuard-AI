@@ -1,0 +1,116 @@
+{
+    "title": "Elliptic Feature Group Comparison",
+    "description": "Comparison of XGBoost models trained using different feature configurations on the same temporal splits.",
+    "evaluation": {
+        "training_time_steps": "1-30",
+        "validation_time_steps": "31-38",
+        "test_time_steps": "39-49",
+        "test_metrics_used_for_comparison": true,
+        "threshold_selection": "Threshold selected using validation F1; test set evaluated afterward."
+    },
+    "experiments": [
+        {
+            "experiment": "baseline",
+            "feature_group": "All 165 features",
+            "feature_count": 165,
+            "threshold": 0.7599999999999997,
+            "validation_f1": 0.9609784507862551,
+            "average_precision": 0.701972371015224,
+            "roc_auc": 0.8920381178132539,
+            "precision": 0.8723404255319149,
+            "recall": 0.6290097629009763,
+            "f1": 0.7309562398703403,
+            "confusion_matrix": [
+                [
+                    11584,
+                    66
+                ],
+                [
+                    266,
+                    451
+                ]
+            ],
+            "ap_delta_vs_baseline": 0.0,
+            "roc_auc_delta_vs_baseline": 0.0,
+            "f1_delta_vs_baseline": 0.0
+        },
+        {
+            "experiment": "drift_ablation",
+            "feature_group": "159 features after drift ablation",
+            "feature_count": 159,
+            "threshold": 0.7799999999999997,
+            "validation_f1": 0.958600583090379,
+            "average_precision": 0.7041326564217064,
+            "roc_auc": 0.8976309252309038,
+            "precision": 0.8856015779092702,
+            "recall": 0.6262203626220363,
+            "f1": 0.7336601307189542,
+            "confusion_matrix": [
+                [
+                    11592,
+                    58
+                ],
+                [
+                    268,
+                    449
+                ]
+            ],
+            "ap_delta_vs_baseline": 0.0021602854064823873,
+            "roc_auc_delta_vs_baseline": 0.005592807417649892,
+            "f1_delta_vs_baseline": 0.002703890848613888
+        },
+        {
+            "experiment": "regularized",
+            "feature_group": "All 165 features with regularization",
+            "feature_count": 165,
+            "threshold": 0.6899999999999997,
+            "validation_f1": 0.9299655568312285,
+            "average_precision": 0.695502869577663,
+            "roc_auc": 0.8947719695201155,
+            "precision": 0.7187993680884676,
+            "recall": 0.6345885634588564,
+            "f1": 0.674074074074074,
+            "confusion_matrix": [
+                [
+                    11472,
+                    178
+                ],
+                [
+                    262,
+                    455
+                ]
+            ],
+            "ap_delta_vs_baseline": -0.006469501437560976,
+            "roc_auc_delta_vs_baseline": 0.0027338517068615786,
+            "f1_delta_vs_baseline": -0.05688216579626626
+        },
+        {
+            "experiment": "local_only",
+            "feature_group": "Local transaction features",
+            "feature_count": 93,
+            "threshold": 0.8699999999999996,
+            "validation_f1": 0.9400593471810089,
+            "average_precision": 0.6811143852117272,
+            "roc_auc": 0.8742248639718426,
+            "precision": 0.8530612244897959,
+            "recall": 0.5829846582984658,
+            "f1": 0.6926263463131731,
+            "confusion_matrix": [
+                [
+                    11578,
+                    72
+                ],
+                [
+                    299,
+                    418
+                ]
+            ],
+            "ap_delta_vs_baseline": -0.020857985803496848,
+            "roc_auc_delta_vs_baseline": -0.017813253841411303,
+            "f1_delta_vs_baseline": -0.038329893557167205
+        }
+    ],
+    "best_by_average_precision": "drift_ablation",
+    "best_by_roc_auc": "drift_ablation",
+    "best_by_f1": "drift_ablation"
+}

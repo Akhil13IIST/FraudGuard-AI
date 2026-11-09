@@ -1,20 +1,19 @@
-import mlflow
-from pathlib import Path
 import json
+from pathlib import Path
 
 import joblib
+import mlflow
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-
 from sklearn.metrics import (
     average_precision_score,
-    roc_auc_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
-    classification_report,
-    confusion_matrix
+    roc_auc_score,
 )
 
 DATA_DIR = Path("data/processed/elliptic")

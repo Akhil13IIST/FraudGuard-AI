@@ -1,22 +1,22 @@
 
-from pathlib import Path
 import json
+from pathlib import Path
+
 import joblib
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
-
-from torch_geometric.nn import SAGEConv
 from sklearn.metrics import (
     average_precision_score,
-    roc_auc_score,
+    confusion_matrix,
+    f1_score,
     precision_recall_curve,
     precision_score,
     recall_score,
-    f1_score,
-    confusion_matrix,
+    roc_auc_score,
 )
+from torch import nn
+from torch_geometric.nn import SAGEConv
 
 ROOT = Path(__file__).resolve().parents[1]
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -108,7 +108,7 @@ def make_graph(df, edges, all_nodes=None):
 def get_gnn_probabilities(df, edges, checkpoint):
 
     # Build graph
-    x, edge_index, graph_df = make_graph(
+    x, edge_index, _graph_df = make_graph(
         df, edges, all_nodes=203769
     )
 
@@ -187,7 +187,6 @@ def main():
     )
 
     # Load temporal partitions and full edge list.
-    train = load_partition("train")
     val = load_partition("validation")
     test = load_partition("test")
     edges = pd.read_parquet(PROCESSED / "edges.parquet")

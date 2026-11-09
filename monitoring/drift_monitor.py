@@ -1,8 +1,9 @@
-﻿from pathlib import Path
-import json
+﻿import json
+from datetime import UTC, datetime
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from datetime import datetime, timezone
 from evidently import Report
 from evidently.presets import DataDriftPreset
 
@@ -74,7 +75,7 @@ snapshot.save_json(str(json_path))
 
 summary = {
     "monitor": "FraudGuard AI - Elliptic Data Drift",
-    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+    "generated_at_utc": datetime.now(UTC).isoformat(),
     "reference_dataset": str(TRAIN_FILE.relative_to(ROOT)),
     "current_dataset": str(VALIDATION_FILE.relative_to(ROOT)),
     "reference_rows": len(reference),

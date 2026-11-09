@@ -1,15 +1,25 @@
 
-from pathlib import Path
 import sqlite3
+from contextlib import contextmanager
+from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parents[1] / "fraudguard.db"
 
 
+@contextmanager
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def initialize_database():

@@ -1,8 +1,7 @@
 
-import pandas as pd
-import numpy as np
 from pathlib import Path
 
+import pandas as pd
 from scipy.stats import ks_2samp
 
 BASE = Path("data/processed/elliptic")

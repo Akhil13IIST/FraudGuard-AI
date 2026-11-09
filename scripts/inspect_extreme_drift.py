@@ -1,7 +1,7 @@
 
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import pandas as pd
 
 BASE = Path("data/processed/elliptic")
 

@@ -1,9 +1,7 @@
 
-import pandas as pd
-import numpy as np
 from pathlib import Path
 
-from sklearn.metrics import average_precision_score
+import pandas as pd
 
 BASE = Path("data/processed/elliptic")
 

@@ -1,9 +1,11 @@
-﻿# Python environments
+# Python environments and caches
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
+.ruff_cache/
+.pytest_cache/
 
 # Secrets
 .env
@@ -12,36 +14,34 @@ __pycache__/
 *.pem
 *.key
 
-# Datasets
+# Raw datasets
 data/raw/
-data/processed/
-data/features/
+
+# Exclude processed datasets by default
+data/processed/*
+!data/processed/elliptic/
+data/processed/elliptic/*
+!data/processed/elliptic/test.parquet
 
 # Databases and experiment tracking
 *.db
 *.sqlite
 *.sqlite3
 mlruns/
-mlflow.db
 
-# Generated model artifacts
-models/**/*.joblib
-models/**/*.pt
-models/**/*.pth
-models/**/*.pkl
-models/**/*.onnx
+# Exclude generated models by default
+models/*
+!models/xgboost/
+models/xgboost/*
+!models/xgboost/elliptic_xgboost.joblib
+!models/xgboost/feature_columns.joblib
 
-# Generated reports
+# Reports
 reports/*.html
 
 # Logs
 *.log
 logs/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
 
 # Notebooks
 .ipynb_checkpoints/
@@ -55,3 +55,5 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+*.bak

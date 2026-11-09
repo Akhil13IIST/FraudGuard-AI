@@ -1,21 +1,20 @@
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
-
-from xgboost import XGBClassifier
 from sklearn.metrics import (
     average_precision_score,
-    roc_auc_score,
+    confusion_matrix,
+    f1_score,
+    precision_recall_curve,
     precision_score,
     recall_score,
-    f1_score,
-    confusion_matrix,
-    precision_recall_curve,
+    roc_auc_score,
 )
+from xgboost import XGBClassifier
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "processed"

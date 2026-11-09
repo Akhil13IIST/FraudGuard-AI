@@ -1,19 +1,18 @@
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-
 from sklearn.metrics import (
     average_precision_score,
-    roc_auc_score,
+    confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
-    confusion_matrix,
+    roc_auc_score,
 )
 
 # --------------------------------------------------

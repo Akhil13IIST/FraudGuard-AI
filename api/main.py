@@ -1,23 +1,22 @@
 
-from pathlib import Path
 import json
 import math
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 import joblib
 import pandas as pd
-
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from .database import (
-    initialize_database,
-    save_elliptic_prediction,
     get_elliptic_predictions,
     get_investigation_cases,
-    update_investigation_case,
     get_investigation_statistics,
+    initialize_database,
+    save_elliptic_prediction,
+    update_investigation_case,
 )
-
 
 # --------------------------------------------------
 # Paths and model loading
@@ -34,11 +33,14 @@ TEST_DATA_PATH = ROOT / "data" / "processed" / "elliptic" / "test.parquet"
 model = joblib.load(MODEL_PATH)
 feature_columns = joblib.load(FEATURE_PATH)
 
-with open(METRICS_PATH, "r") as file:
+with open(METRICS_PATH, "r", encoding="utf-8") as file:
     metrics = json.load(file)
-with open(COMPARISON_PATH, "r") as file:
+
+with open(COMPARISON_PATH, "r", encoding="utf-8") as file:
     comparison_metrics = json.load(file)
+
 THRESHOLD = float(metrics["threshold"])
+
 
 # Load held-out test transactions for the demonstration interface.
 test_data = pd.read_parquet(TEST_DATA_PATH)
@@ -53,29 +55,32 @@ if missing_columns:
 
 
 # --------------------------------------------------
-# FastAPI application
+# FastAPI application lifecycle
 # --------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_database()
+    yield
+
 
 app = FastAPI(
     title="Elliptic Fraud Detection API",
     description="Illicit transaction classification using Elliptic XGBoost",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 
-@app.on_event("startup")
-def startup_event():
-    initialize_database()
-
-
 # --------------------------------------------------
-# Request schema
+# Request schemas
 # --------------------------------------------------
 
 class TransactionFeatures(BaseModel):
     tx_id: str = Field(min_length=1)
     time_step: int = Field(ge=1, le=49)
     features: dict[str, float]
+
 
 class InvestigationUpdate(BaseModel):
     status: str
@@ -146,7 +151,7 @@ def classify_transaction(tx_id, time_step, feature_values):
 
 
 # --------------------------------------------------
-# API endpoints
+# General API endpoints
 # --------------------------------------------------
 
 @app.get("/")
@@ -169,9 +174,15 @@ def health():
     }
 
 
+# --------------------------------------------------
+# Model information endpoints
+# --------------------------------------------------
+
 @app.get("/model/metrics")
 def model_metrics():
     return metrics
+
+
 @app.get("/model/comparison")
 def model_comparison():
     return {
@@ -196,13 +207,18 @@ def model_comparison():
             "note": (
                 "This comparison uses the drift-ablation XGBoost artifact, "
                 "not the production API's elliptic_xgboost.joblib artifact."
-            )
-        }
+            ),
+        },
     }
+
+
+# --------------------------------------------------
+# Transaction endpoints
+# --------------------------------------------------
 
 @app.get("/samples")
 def get_samples(
-    limit: int = Query(default=100, ge=1, le=1000)
+    limit: int = Query(default=100, ge=1, le=1000),
 ):
     """Return transaction IDs and time steps, not their labels."""
 
@@ -257,18 +273,20 @@ def predict_sample(tx_id: str):
 
 @app.get("/transactions")
 def transaction_history(
-    limit: int = Query(default=100, ge=1, le=1000)
+    limit: int = Query(default=100, ge=1, le=1000),
 ):
     return {
         "transactions": get_elliptic_predictions(limit)
     }
+
+
 # --------------------------------------------------
 # Analyst investigation endpoints
 # --------------------------------------------------
 
 @app.get("/investigations")
 def list_investigations(
-    limit: int = Query(default=100, ge=1, le=1000)
+    limit: int = Query(default=100, ge=1, le=1000),
 ):
     return {
         "cases": get_investigation_cases(limit)

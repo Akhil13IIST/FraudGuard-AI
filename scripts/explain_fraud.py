@@ -2,9 +2,9 @@
 from pathlib import Path
 
 import joblib
+import matplotlib.pyplot as plt
 import pandas as pd
 import shap
-import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
 

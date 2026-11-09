@@ -1,9 +1,11 @@
-
-import streamlit as st
-import requests
-import pandas as pd
+import os
 import json
 from pathlib import Path
+
+import pandas as pd
+import requests
+import streamlit as st
+
 # --------------------------------------------------
 # Configuration
 # --------------------------------------------------
@@ -14,7 +16,7 @@ st.set_page_config(
     layout="wide",
 )
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 st.title("Elliptic Fraud Detection System")
 st.caption(
@@ -112,15 +114,196 @@ try:
 except requests.RequestException as error:
     st.error(f"Could not load model metrics: {error}")
 
+# --------------------------------------------------
+# Feature Group Ablation Study
+# --------------------------------------------------
+
+st.divider()
+st.header("Feature Group Ablation Study")
+
+st.caption(
+    "Comparison of XGBoost models trained with different "
+    "feature configurations on the same temporal test split. "
+    "These experiments are separate from the production model."
+)
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+FEATURE_COMPARISON_FILE = (
+    PROJECT_ROOT
+    / "reports"
+    / "elliptic_feature_group_comparison.json"
+)
+
+if FEATURE_COMPARISON_FILE.exists():
+    try:
+        with open(FEATURE_COMPARISON_FILE, "r", encoding="utf-8") as file:
+            feature_report = json.load(file)
+
+        experiments = feature_report["experiments"]
+        feature_df = pd.DataFrame(experiments)
+
+        st.info(
+            "All four experiments use the same chronological data splits. "
+            "Decision thresholds were selected using validation F1, "
+            "then evaluated on the held-out test set."
+        )
+
+        best_model = feature_report["best_by_average_precision"]
+
+        best_result = next(
+            item for item in experiments
+            if item["experiment"] == best_model
+        )
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric(
+            "Best Test Average Precision",
+            f"{best_result['average_precision']:.4f}",
+        )
+
+        col2.metric(
+            "Best Performing Configuration",
+            best_model.replace("_", " ").title(),
+        )
+
+        col3.metric(
+            "Features Used",
+            best_result["feature_count"],
+        )
+
+        st.subheader("Experimental Results")
+
+        display_df = feature_df[
+            [
+                "experiment",
+                "feature_group",
+                "feature_count",
+                "threshold",
+                "validation_f1",
+                "average_precision",
+                "roc_auc",
+                "precision",
+                "recall",
+                "f1",
+            ]
+        ].copy()
+
+        display_df.columns = [
+            "Experiment",
+            "Feature Configuration",
+            "Feature Count",
+            "Threshold",
+            "Validation F1",
+            "Test AP",
+            "Test ROC-AUC",
+            "Test Precision",
+            "Test Recall",
+            "Test F1",
+        ]
+
+        st.dataframe(
+            display_df.style.format({
+                "Threshold": "{:.4f}",
+                "Validation F1": "{:.4f}",
+                "Test AP": "{:.4f}",
+                "Test ROC-AUC": "{:.4f}",
+                "Test Precision": "{:.4f}",
+                "Test Recall": "{:.4f}",
+                "Test F1": "{:.4f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        st.subheader("Performance Comparison")
+
+        chart_df = feature_df.set_index("experiment")[
+            ["average_precision", "roc_auc", "f1"]
+        ]
+
+        chart_df.columns = [
+            "Average Precision",
+            "ROC-AUC",
+            "F1-score",
+        ]
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.caption("Test Average Precision")
+            st.bar_chart(chart_df[["Average Precision"]])
+
+        with col2:
+            st.caption("Test ROC-AUC")
+            st.bar_chart(chart_df[["ROC-AUC"]])
+
+        st.caption("Test F1-score")
+        st.bar_chart(chart_df[["F1-score"]])
+
+        st.subheader("Interpretation")
+
+        local_result = next(
+            item for item in experiments
+            if item["experiment"] == "local_only"
+        )
+
+        baseline_result = next(
+            item for item in experiments
+            if item["experiment"] == "baseline"
+        )
+
+        st.write(
+            f"- Local-only model uses {local_result['feature_count']} "
+            f"transaction features and achieves test AP of "
+            f"{local_result['average_precision']:.4f}."
+        )
+
+        st.write(
+            f"- Full baseline uses {baseline_result['feature_count']} "
+            f"features and achieves test AP of "
+            f"{baseline_result['average_precision']:.4f}."
+        )
+
+        st.write(
+            f"- Best configuration is **{best_model}**, "
+            f"with test AP of {best_result['average_precision']:.4f}."
+        )
+
+        st.caption(
+            "These are offline experimental results, not live "
+            "production performance estimates. The comparison does "
+            "not establish statistical significance or real-time "
+            "feature availability."
+        )
+
+    except (OSError, json.JSONDecodeError, KeyError, ValueError) as error:
+        st.error(
+            f"Could not load feature-group comparison: {error}"
+        )
+
+else:
+    st.warning(
+        "Feature-group comparison report not found. "
+        "Run scripts/compare_elliptic_feature_groups.py first."
+    )
+
+
 
 st.divider()
 
 
 # --------------------------------------------------
-# Model comparison
+
+# --------------------------------------------------
+# Experimental model evaluation
 # --------------------------------------------------
 
-st.header("Model Comparison")
+st.header("Experimental Model Evaluation")
+st.caption(
+    "Drift-ablation XGBoost vs GraphSAGE. "
+    "These are research experiments, separate from the production API model."
+)
 
 try:
     comparison_response = requests.get(
@@ -135,12 +318,17 @@ try:
     individual = comparison["individual_test_results"]
     interpretation = comparison["interpretation"]
 
-    st.subheader("Validation Model Selection")
+    st.info(
+        "This experiment uses the 159-feature drift-ablation XGBoost "
+        "artifact, not the 165-feature production XGBoost model."
+    )
+
+    st.subheader("Validation-based Model Selection")
 
     col1, col2, col3 = st.columns(3)
 
     col1.metric(
-        "XGBoost Validation AP",
+        "Drift-ablation XGBoost Validation AP",
         f"{selected['validation_ap']:.4f}",
     )
 
@@ -155,7 +343,10 @@ try:
     )
 
     comparison_df = pd.DataFrame({
-        "Model": ["XGBoost", "GraphSAGE"],
+        "Model": [
+            "Drift-ablation XGBoost (159 features)",
+            "GraphSAGE",
+        ],
         "Test Average Precision": [
             individual["xgboost"]["average_precision"],
             individual["graphsage"]["average_precision"],
@@ -192,7 +383,7 @@ try:
             ]
         )
 
-    st.subheader("Selected Model Configuration")
+    st.subheader("Selected Experimental Configuration")
 
     col1, col2 = st.columns(2)
 
@@ -210,7 +401,19 @@ try:
 
     st.caption(interpretation["note"])
 
-    with st.expander("Selected model test evaluation"):
+    if (
+        selected["xgb_weight"] == 1.0
+        and selected["gnn_weight"] == 0.0
+    ):
+        st.warning(
+            "The selected configuration is effectively standalone "
+            "drift-ablation XGBoost. GraphSAGE contributes no predictions "
+            "to the selected blend."
+        )
+
+    with st.expander(
+        "Selected experimental configuration: test evaluation"
+    ):
         test_results = comparison["test_results"]
 
         col1, col2, col3 = st.columns(3)
@@ -242,7 +445,8 @@ try:
         )
 
 except requests.RequestException as error:
-    st.error(f"Could not load model comparison: {error}")
+    st.error(f"Could not load experimental model comparison: {error}")
+
 
 
 st.divider()
@@ -310,6 +514,75 @@ else:
         "No drift monitoring results found. "
         "Run the Evidently monitoring script first."
     )
+# --------------------------------------------------
+# MODEL EXPLAINABILITY - SHAP
+# --------------------------------------------------
+
+st.divider()
+st.header("Model Explainability")
+st.caption(
+    "SHAP visualisations explain how input features influence "
+    "the model's predictions. These are offline model explanations."
+)
+
+SHAP_GLOBAL = PROJECT_ROOT / "reports" / "shap_global_importance.png"
+SHAP_SUMMARY = PROJECT_ROOT / "reports" / "shap_summary.png"
+SHAP_TRANSACTION = PROJECT_ROOT / "reports" / "shap_transaction_explanation.png"
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Global Feature Importance")
+    if SHAP_GLOBAL.exists():
+        st.image(str(SHAP_GLOBAL), use_container_width=True)
+    else:
+        st.warning("Global SHAP plot not found.")
+
+with col2:
+    st.subheader("SHAP Summary Plot")
+    if SHAP_SUMMARY.exists():
+        st.image(str(SHAP_SUMMARY), use_container_width=True)
+    else:
+        st.warning("SHAP summary plot not found.")
+
+with st.expander("Transaction-level SHAP explanation"):
+    if SHAP_TRANSACTION.exists():
+        st.image(str(SHAP_TRANSACTION), use_container_width=True)
+    else:
+        st.warning("Transaction SHAP plot not found.")
+
+
+# --------------------------------------------------
+# FEATURE DRIFT VISUALISATION
+# --------------------------------------------------
+
+st.divider()
+st.subheader("Feature Drift Analysis")
+
+DRIFT_CSV = PROJECT_ROOT / "reports" / "elliptic_feature_drift.csv"
+
+if DRIFT_CSV.exists():
+    try:
+        drift_df = pd.read_csv(DRIFT_CSV)
+
+        drift_chart = (
+            drift_df[["feature", "train_vs_validation"]]
+            .sort_values("train_vs_validation", ascending=False)
+            .head(15)
+            .set_index("feature")
+        )
+
+        st.caption(
+            "Top 15 features by train-versus-validation drift score. "
+            "Higher values indicate greater distributional difference."
+        )
+
+        st.bar_chart(drift_chart)
+
+    except (OSError, KeyError, ValueError) as error:
+        st.error(f"Could not load feature drift data: {error}")
+else:
+    st.warning("Feature drift CSV not found.")
 # --------------------------------------------------
 # Transaction investigation
 # --------------------------------------------------

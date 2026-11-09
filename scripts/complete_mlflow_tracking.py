@@ -1,9 +1,10 @@
 
 import json
+from pathlib import Path
+
 import joblib
 import mlflow
 import mlflow.xgboost
-from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
